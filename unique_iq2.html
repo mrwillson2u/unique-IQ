@@ -1,0 +1,47 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+  <head>
+    <title>Getting Started Extension's Popup</title>
+    <style>
+      body {
+        font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+        font-size: 100%;
+      }
+      #status {
+        /* avoid an excessively wide status text */
+        /*white-space: pre;*/
+        /*text-overflow: ellipsis;*/
+        /*overflow: hidden;*/
+        width: 800px;
+        /*height: 800px;*/
+      }
+
+
+    </style>
+    <!-- <script type="text/javascript" src="chrome_ex_oauthsimple.js"></script>
+    <script type="text/javascript" src="chrome_ex_oauth.js"></script>
+    <script type="text/javascript" src="onload.js"></script> -->
+    <script src="https://cdn.firebase.com/js/client/2.4.0/firebase.js"></script>
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
+     -->
+     <!-- <script src="Chart.js"></script> -->
+    <script src="uniqueIq.js"></script>
+  </head>
+    <body><script type="text/javascript" src="lexer.js"></script>
+    <script type="text/javascript" src="lexicon.js_"></script>
+    <script type="text/javascript" src="POSTagger.js"></script>
+    <div id="status">
+      <!-- <canvas id="myChart" width="400" height="400"></canvas> -->
+    </div>
+    <!-- <img id="image-result" hidden> -->
+  </body>
+</html>
