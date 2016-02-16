@@ -55,24 +55,30 @@ function getCurrentTabTitle(callback) {
 
 function getHistory(callback) {
 
-  chrome.history.search({text: '', maxResults: 100000}, function(data) {
+  chrome.history.search({text: "", maxResults: 1000}, function(data) {
     var result = [];
-      data.forEach(function(page) {
+    console.log(data.length);
+    var totalCount = 0;
 
-        //result += (page.title + "<br/>");
-        // renderStatus(page.title);
+    for(i in data) {
+      totalCount += data[i].visitCount;
+    }
+
+    console.log("Enties: " + data.length + "   totalCount: " + totalCount);
+      data.forEach(function(page) {
          var parsed = parseText(page.title);
          for(i in parsed) {
-          result.push(parsed[i]);
+          result.push({word: parsed[i], count: page.visitCount, url: page.url});
          }
       });
+
       var output = "";
       for(i in result) {
-        result[i] = result[i].toLowerCase();
+        result[i] = result[i].word.toLowerCase();
         output += result[i] + " ";
       }
-      //renderStatus(output);
-      processResults(result);
+
+      renderStatus(processResults(result));
   });
 };
 
@@ -100,73 +106,86 @@ function processResults(input) {
     }
   }
 
-
-// var out = 0;
   for(var i = 0; i < rank.length; i++) {
     var j = 0;
     var temp = rank[i];
     rank.splice(i, 1);
 
-
     while(temp.count < rank[j].count && j < rank.length) {
-
       j++;
     }
-
     rank.splice(j, 0, temp);
-
-
   }
-//renderStatus("hello");
+
+  uploadData(rank);
+
   var output = "";
-  //rank[0] = {wordlist[0]: rank[wordlist[i]]};
-
-
-  // for(i = 1 in wordList) {
-  //   var index = rank[wordlist[i]];
-  //
-  //   while(j = i < rank.length) {
-  //     if(index > rank[wordlist[j]]) {
-  //       rank["ranking"] = rank[wordlist[j]];
-  //     } else if (j === rank.length - 1) {
-  //       //rank.push(index);
-  //     }
-  //     j++;
-  //   }
-  // }
-
 
 
   for(i in rank) {
-    if(rank[i].count >= 30) {
-    output += rank[i].word + ": " + rank[i].count + " ; ";
+    if(rank[i].count >= 1) {
+      output += rank[i].word + ": " + rank[i].count + " ; ";
+    }
   }
-  }
-  renderStatus(output);
+
+  return(output);
 }
 
+// Displays text in the extention popup
 function renderStatus(statusText) {
   document.getElementById('status').textContent = statusText;
+  console.log(statusText);
 
+
+//
 }
 
+function uploadData(data) {
+  var auth = ref.getAuth();
+  var upload = {data: data};
+
+console.log("hi");
+  var user = ref.child(auth.uid);
+  user.set(upload);
+}
+
+
+
+// Create a callback which logs the current auth state
+function authDataCallback(authData) {
+  if (authData) {
+    console.log("User " + authData.uid + " is logged in with " + authData.provider);
+  } else {
+    console.log("User is logged out");
+  }
+}
+
+// Fires as soon as all the content has loaded
 document.addEventListener('DOMContentLoaded', function() {
   var ref = new Firebase("https://unique-iq.firebaseio.com");
+  ref.onAuth(authDataCallback);
 
+  var authData = ref.getAuth();
+  if (authData) {
+    console.log("User " + authData.uid + " is logged in with " + authData.provider);
+  } else {
+    console.log("User is logged out. Logging in now!");
 
+    ref.authAnonymously(function(error, authData) {
+      if (error) {
+        console.log("Login Failed!", error);
+      } else {
+        console.log("Authenticated successfully with payload:", authData);
+      }
+    });
 
+  }
 
-          getHistory(function(history) {
+  getHistory(function(history) {
 
-          }, function(errorMessage) {
-            renderStatus('Huston, we have a problem.');
-          });
-
-
-
-
-
-
+  }, function(errorMessage) {
+    renderStatus('Huston, we have a problem.');
+  });
 });
 
 function parseText(input) {
@@ -187,32 +206,3 @@ function parseText(input) {
   }
   return result;
 }
-
-//
-// document.addEventListener('DOMContentLoaded', function() {
-//
-//   getCurrentTabTitle(function(title) {
-//     // Put the image URL in Google search.
-//     renderStatus('Getting Info...');
-//     console.log(title);
-//
-//     // Note the \ at the end of the first line
-//     var words = new Lexer().lex(title);
-//     var taggedWords = new POSTagger().tag(words);
-//     var result = "";
-//     for (i in taggedWords) {
-//       var taggedWord = taggedWords[i];
-//       var word = taggedWord[0];
-//       var tag = taggedWord[1];
-//       // Note the use of document.writeln instead of print
-//       result += (word + " /" + tag + "<br/>");
-//     }
-//     renderStatus(result);
-//     //console.log(result);
-//     // document.getElementById("tagged_text").innerHTML = result;
-//
-//
-//   }, function(errorMessage) {
-//     renderStatus('Huston, we have a problem.');
-//   });
-// });
