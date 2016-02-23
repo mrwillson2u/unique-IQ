@@ -53,6 +53,99 @@ function getCurrentTabTitle(callback) {
   // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
 
+function corsRequest(method, url) {
+  var xhr = new XMLHttpRequest();
+
+  // if("WithCredentials" in xhr) {
+  xhr.open(method, url, true);
+  // } else if(typeof XDomainRequesst != "undefined") {
+  //   xhr = new XDomainRequesst();
+  //   xhr.open(method, url);
+  // } else {
+  //   xhr = null;
+  // }
+  return xhr;
+}
+// Create the XHR object.
+// function createCORSRequest(method, url) {
+//   url = url;
+//   var xhr = new XMLHttpRequest();
+//   console.log('blah');
+//   if ("withCredentials" in xhr) {
+//     // XHR for Chrome/Firefox/Opera/Safari.
+//     xhr.open(method, url, true);
+//   } else if (typeof XDomainRequest != "undefined") {
+//     // XDomainRequest for IE.
+//     xhr = new XDomainRequest();
+//     xhr.open(method, url);
+//   } else {
+//     // CORS not supported.
+//     xhr = null;
+//
+//   }
+//   return xhr;
+// }
+
+function requesdUrl(url) {
+  var xhr = corsRequest('GET', url);
+
+  if(!xhr) {
+    throw new Error('CORS not supported!');
+  }
+
+  xhr.onload = function() {
+    var text = xhr.responseText;
+    var title = getTitle(text);
+    console.log('Response from CORS request to ' + url + ': ' + title);
+    parsePage(text);
+  }
+  xhr.onerror = function() {
+    console.log('Woops, there was an error making the request.');
+  };
+
+  xhr.setRequestHeader('Access-Control-Request_Meathod', 'GET');
+  xhr.send();
+
+}
+
+// Helper method to parse the title tag from the response.
+function getTitle(text) {
+  return text.match('<title>(.*)?</title>')[1];
+}
+
+// Get all of the valuable content from the page
+function parsePage(pageHtml) {
+  var searchTags = ['title', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+  var importantText = [];
+
+  for(i in searchTags) {
+    var newText = $(pageHtml).find(searchTags[i]).text();
+    importantText.push(newText);
+  }
+  //importantText = $(pageHtml).find(searchTags[1]).text()
+
+  // console.log("here: " + importantText);
+  var parsed = [];
+  for(i in importantText) {
+    var result = parseText(importantText[i]);
+    parsed = parsed.concat(result);
+
+  }
+console.log(parsed);
+  // for(i in parsed) {
+  //  result.push({word: parsed[i]});
+  // }
+
+  var output = "";
+  for(i in parsed) {
+   parsed[i] = parsed[i].toLowerCase();
+   //output += parsed[i] + " ";
+  }
+
+  processResults(parsed);
+}
+
+
 function getHistory(callback) {
 
   chrome.history.search({text: "", maxResults: 1000}, function(data) {
@@ -65,21 +158,42 @@ function getHistory(callback) {
     }
 
     console.log("Enties: " + data.length + "   totalCount: " + totalCount);
-      data.forEach(function(page) {
-         var parsed = parseText(page.title);
-         for(i in parsed) {
-          result.push({word: parsed[i], count: page.visitCount, url: page.url});
-         }
-      });
+    for(i = 0; i < 1; i++) {
+      var page = data[i];
+      //data.forEach(function(page) {
+      // doit(data);
 
-      var output = "";
-      for(i in result) {
-        result[i] = result[i].word.toLowerCase();
-        output += result[i] + " ";
-      }
+        // function doit(page) {
+        var url = page.url;
+        console.log("Url2: " + url);
 
-      renderStatus(processResults(result));
+        requesdUrl(page.url);
+        // var xhr = new XMLHttpRequest();
+        // xhr.onreadystatechange = handleStateChange; // Implemented elsewhere.
+        // xhr.open("GET", chrome.extension.getURL(page.url), true);
+        // xhr.send();
+
+        // $.get(url, function(htmlPage) {
+        //   console.log(htmlPage);
+        // });
+
+
+        //  var parsed = parseText(page.title);
+        //  for(i in parsed) {
+        //   result.push({word: parsed[i], count: page.visitCount, url: page.url});
+        //  }
+      };
+      //
+      // var output = "";
+      // for(i in result) {
+      //   result[i] = result[i].word.toLowerCase();
+      //   output += result[i] + " ";
+      // }
+
+      //renderStatus(processResults(result));
   });
+
+
 };
 
 function processResults(input) {
@@ -134,7 +248,7 @@ function processResults(input) {
 // Displays text in the extention popup
 function renderStatus(statusText) {
   document.getElementById('status').textContent = statusText;
-  console.log(statusText);
+  //console.log(statusText);
 
 
 //
@@ -142,28 +256,27 @@ function renderStatus(statusText) {
 
 function uploadData(data) {
   var auth = ref.getAuth();
-  var upload = {data: data};
 
-console.log("hi");
-  var user = ref.child(auth.uid);
-  user.set(upload);
+  // Check if the user already is logged on the server, and if not create it, then enter the data
+  var userRef = ref.child('users').orderByValue().equalTo(auth.uid);
+  userRef.once('value', function(snapshot) {
+
+    if(!snapshot.exists()) {
+
+      ref.child('users').set({[auth.uid]: {data: data}});
+
+    } else {
+      snapshot.ref().auth.uid.set({data: data});
+
+   }
+  });
 }
 
-
-
-// Create a callback which logs the current auth state
-function authDataCallback(authData) {
-  if (authData) {
-    console.log("User " + authData.uid + " is logged in with " + authData.provider);
-  } else {
-    console.log("User is logged out");
-  }
-}
 
 // Fires as soon as all the content has loaded
 document.addEventListener('DOMContentLoaded', function() {
   var ref = new Firebase("https://unique-iq.firebaseio.com");
-  ref.onAuth(authDataCallback);
+  //ref.onAuth(authDataCallback);
 
   var authData = ref.getAuth();
   if (authData) {
@@ -180,6 +293,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
   }
+
+  ref.once("value", function(snapshot) {
+    if(!snapshot.child('users').exists()) {
+       var users = ref.child('users');
+       var auth = ref.getAuth();
+       //users.push({user: auth.uid});
+    }
+  });
 
   getHistory(function(history) {
 

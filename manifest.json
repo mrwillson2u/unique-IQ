@@ -14,7 +14,7 @@
     "scripts": ["background.js"]
   },
 
-  "content_security_policy": "script-src 'self' https://cdn.firebase.com/* https://*.firebaseio.com; object-src 'self'",
+  "content_security_policy": "script-src 'self' https://cdn.firebase.com https://*.firebaseio.com https://cdn.firebase.com/js/client/2.4.0/firebase.js; object-src 'self'; style-src 'self' 'unsafe-inline'",
 
   "permissions": [
     "activeTab",
@@ -27,6 +27,7 @@
      "https://cdn.firebase.com/js/client/2.4.0/firebase.js",
     "https://www.google.com/accounts/OAuthGetRequestToken",
     "https://www.google.com/accounts/OAuthAuthorizeToken",
-    "https://www.google.com/accounts/OAuthGetAccessToken"
+    "https://www.google.com/accounts/OAuthGetAccessToken",
+    "http://*/"
   ]
 }
