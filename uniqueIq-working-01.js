@@ -43,6 +43,8 @@ function getCurrentTabTitle(callback) {
     callback(title);
   });
 
+
+
   // Most methods of the Chrome extension APIs are asynchronous. This means that
   // you CANNOT do something like this:
   //
@@ -52,6 +54,74 @@ function getCurrentTabTitle(callback) {
   // });
   // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
+
+function corsRequest(method, url) {
+  var xhr = new XMLHttpRequest();
+
+  // if("WithCredentials" in xhr) {
+  xhr.open(method, url, true);
+  // } else if(typeof XDomainRequesst != "undefined") {
+  //   xhr = new XDomainRequesst();
+  //   xhr.open(method, url);
+  // } else {
+  //   xhr = null;
+  // }
+  return xhr;
+}
+// Create the XHR object.
+// function createCORSRequest(method, url) {
+//   url = url;
+//   var xhr = new XMLHttpRequest();
+//   console.log('blah');
+//   if ("withCredentials" in xhr) {
+//     // XHR for Chrome/Firefox/Opera/Safari.
+//     xhr.open(method, url, true);
+//   } else if (typeof XDomainRequest != "undefined") {
+//     // XDomainRequest for IE.
+//     xhr = new XDomainRequest();
+//     xhr.open(method, url);
+//   } else {
+//     // CORS not supported.
+//     xhr = null;
+//
+//   }
+//   return xhr;
+// }
+
+
+
+// Get all of the valuable content from the page
+function parsePage(pageHtml) {
+  var searchTags = ['title', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+  var importantText = [];
+
+  for(i in searchTags) {
+    var newText = $(pageHtml).find(searchTags[i]).text();
+    importantText.push(newText);
+  }
+  //importantText = $(pageHtml).find(searchTags[1]).text()
+
+  // console.log("here: " + importantText);
+  var parsed = [];
+  for(i in importantText) {
+    var result = parseText(importantText[i]);
+    parsed = parsed.concat(result);
+
+  }
+  console.log(parsed);
+  // for(i in parsed) {
+  //  result.push({word: parsed[i]});
+  // }
+
+  var output = "";
+  for(i in parsed) {
+   parsed[i] = parsed[i].toLowerCase();
+   //output += parsed[i] + " ";
+  }
+
+  processResults(parsed);
+}
+
 
 function getHistory(callback) {
 
@@ -65,21 +135,20 @@ function getHistory(callback) {
     }
 
     console.log("Enties: " + data.length + "   totalCount: " + totalCount);
-      data.forEach(function(page) {
-         var parsed = parseText(page.title);
-         for(i in parsed) {
-          result.push({word: parsed[i], count: page.visitCount, url: page.url});
-         }
-      });
 
-      var output = "";
-      for(i in result) {
-        result[i] = result[i].word.toLowerCase();
-        output += result[i] + " ";
-      }
+    var urls = [];
 
-      renderStatus(processResults(result));
+    for(i = 0; i < data.length; i++) {
+      var page = data[i];
+
+        urls.push(page.url);
+        console.log("Url2: " + page.url);
+      };
+      uploadData(urls);
+
   });
+
+
 };
 
 function processResults(input) {
@@ -144,16 +213,43 @@ function uploadData(data) {
   var auth = ref.getAuth();
 
   // Check if the user already is logged on the server, and if not create it, then enter the data
-  var userRef = ref.child('users').orderByValue().equalTo(auth.uid);
+  var userRef = ref.child('users/' + auth.uid);
   userRef.once('value', function(snapshot) {
 
     if(!snapshot.exists()) {
+      console.log('New User!');
+      for(i in data) {
+        ref.child('users').child(auth.uid + '/URLS').push({URL: data[i], Processed: false});
 
-      ref.child('users').set({[auth.uid]: {data: data}});
 
+      }
     } else {
-      snapshot.ref().auth.uid.set({data: data});
 
+      // ref.child('users').child(auth.uid + '/URLS')
+      // check to see if everything is already logged
+      // console.log('key: ' + snapshot.child('URLS').orderByValue().equalTo());
+      for(i in data) {
+        var exists = false;
+        snapshot.child('URLS').forEach(function(value) {
+          // If it is found..
+          if(value.val().URL === data[i]) {
+            exists = true;
+            console.log('already exists!');
+
+          }
+        });
+
+        // If it doesnt already exist, lets push it to Firebase
+        if(!exists) {
+          console.log('Adding to existing user!');
+           ref.child('users').child(auth.uid + '/URLS').push({URL: data[i], Processed: false, ".indexOn": "Processed"});
+
+          console.log('new Data!');
+        }
+renderStatus("Data uploaded!");
+        chrome.tabs.create({url:'http://www.botnic.cc'});
+        history.back();
+      }
    }
   });
 }
@@ -163,6 +259,7 @@ function uploadData(data) {
 document.addEventListener('DOMContentLoaded', function() {
   var ref = new Firebase("https://unique-iq.firebaseio.com");
   //ref.onAuth(authDataCallback);
+
 
   var authData = ref.getAuth();
   if (authData) {

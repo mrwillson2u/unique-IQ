@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
 
-  "name": "Getting started example",
-  "description": "This extension shows a Google Image search result for the current page",
+  "name": "Unique IQ Scanner",
+  "description": "This extension learns about you.",
   "version": "1.0",
 
   "browser_action": {
@@ -28,6 +28,7 @@
     "https://www.google.com/accounts/OAuthGetRequestToken",
     "https://www.google.com/accounts/OAuthAuthorizeToken",
     "https://www.google.com/accounts/OAuthGetAccessToken",
+    "http://d3js.org/d3.v3.min.js",
     "http://*/"
   ]
 }

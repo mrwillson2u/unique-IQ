@@ -203,7 +203,7 @@ function uploadData(data) {
     if(!snapshot.exists()) {
       console.log('New User!');
       for(i in data) {
-        ref.child('users').child(auth.uid + '/URLS').push({URL: data[i], Processed: 'no'});
+        ref.child('users').child(auth.uid + '/URLS').push({URL: data[i], Processed: false});
 
 
       }
@@ -229,7 +229,7 @@ function uploadData(data) {
           // If this url hasnt beeen logged already, a=log it to Firebase
           if(!exists) {
             console.log('Adding to existing user: ' + data[i]);
-             ref.child('users').child(auth.uid + '/URLS').push({URL: data[i], Processed: 'no'});
+             ref.child('users').child(auth.uid + '/URLS').push({URL: data[i], Processed: false});
           }
         }
       }

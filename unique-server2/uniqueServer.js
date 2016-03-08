@@ -1,5 +1,5 @@
 // Fires as soon as all the content has loaded
-document.addEventListener('DOMContentLoaded', function() {
+//document.addEventListener('DOMContentLoaded', function() {
 
   var ref = new Firebase("https://unique-iq.firebaseio.com");
 
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("The updated post title is " + snapshot);
   });
 
-});
+//});
 
 
 // Get all of the valuable content from the page
