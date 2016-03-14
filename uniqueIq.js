@@ -3,7 +3,8 @@
 var ref = new Firebase("https://unique-iq.firebaseio.com");
 
 // Change icon on click
-var currentIcon = "icon_off.png";
+var currentIcon = "icon_on.png";
+chrome.history.onVisited.addListener(updateLink);
 var authData;
 
 chrome.browserAction.setIcon({path: currentIcon});
@@ -17,59 +18,7 @@ chrome.identity.getProfileUserInfo(function(userInfo) {
   authData = userInfo;
 });
 
-// Fires as soon as all the content has loaded
-// document.addEventListener('DOMContentLoaded', function() {
-  // ref.onAuth(authDataCallback);
-
-  // var users;
-  // var auth = ref.getAuth();
-
-// login();
-
-  // var authData = ref.getAuth();
-
-
-
-  // if (authData) {
-  //   console.log("User " + authData.uid + " is logged in with " + authData.provider);
-  // } else {
-  //   console.log("User is logged out. Logging in now!");
-  //
-  //   ref.authAnonymously(function(error, authData) {
-  //     if (error) {
-  //       console.log("Login Failed!", error);
-  //     } else {
-  //       console.log("Authenticated successfully with payload:", authData);
-  //     }
-  //   });
-  //
-  // }
-
-
-// });
-
-// ref.unauth();
-
-
-// Create a callback which logs the current auth state
-// function authDataCallback(authData) {
-//   if (authData) {
-//     console.log("User " + authData.uid + " is logged in with " + authData.provider);
-//   } else {
-//     console.log("User is logged out");
-//   }
-// }
-
-
-
-// Register the callback to be fired every time auth state changes
-// ref.onAuth(authDataCallback);
-
-
-// ref.unauth();
-// });
-
-
+// Updates the icon when the user turns it on or off
 function updateIcon() {
 
   if (currentIcon === "icon_on.png") {
@@ -93,39 +42,26 @@ function updateIcon() {
 }
 
 chrome.browserAction.onClicked.addListener(updateIcon);
-// updateIcon();
 
 
-// Logs users in if not already done so
-function login() {
-  var auth = ref.getAuth();
 
-  console.log("auth: ");
-  console.log(auth);
-  if(!auth) {
-    ref.authWithOAuthPopup("google", function(error, authData) {
-      if (error) {
-        console.log("Login Failed!", error);
-      } else {
-        console.log("Authenticated successfully with payload:", authData);
-        // ref.once("value", function(snapshot) {
-        //   if(!snapshot.child('users').exists()) {
-        //      users = ref.child('users');
-        //      auth = ref.getAuth();
-        //
-        //      getHistory(function(history) {
-        //
-        //      }, function(errorMessage) {
-        //        renderStatus('Huston, we have a problem.');
-        //      });
-        //      //users.push({user: auth.uid});
-        //   }
-        // });
-      }
-    });
-  }
+// Collects all URLS in the history and logs them to the database
+function getAllHistory() {
+  ref.once("value", function(snapshot) {
+    if(!snapshot.child('users').exists()) {
+       users = ref.child('users');
+       auth = ref.getAuth();
 
+       getHistory(function(history) {
+
+       }, function(errorMessage) {
+         renderStatus('Huston, we have a problem.');
+       });
+       //users.push({user: auth.uid});
+    }
+  });
 }
+
 
 // Updates the new page visited to database
 function updateLink(historyItem) {
@@ -254,7 +190,7 @@ function getCurrentTabTitle(callback) {
 
 }
 
-
+// Firebase code
 /*! @license Firebase v2.4.1
     License: https://www.firebase.com/terms/terms-of-service.html */
 (function Firebase() {var h,n=this;function p(a){return void 0!==a}function aa(){}function ba(a){a.yb=function(){return a.zf?a.zf:a.zf=new a}}

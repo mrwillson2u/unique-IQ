@@ -9,7 +9,8 @@
   "browser_action": {
       "name": "Click to change the icon"
   },
-  
+
+  "content_security_policy": "script-src 'self' https://cdn.firebase.com https://*.firebaseio.com https://cdn.firebase.com/js/client/2.4.0/firebase.js; object-src 'self'; style-src 'self' 'unsafe-inline'",
   "oauth2": {
     "client_id": "302085066950-j0v4n97jngv19all32l4l9jupcr0ac0s.apps.googleusercontent.com",
     "scopes": [
@@ -22,6 +23,9 @@
     "tabs",
     "history",
     "identity",
-    "identity.email"
+    "identity.email",
+   "http://*.firebase.com/",
+   "http://*.firebaseio.com/",
+   "https://cdn.firebase.com/js/client/2.4.0/firebase.js"
   ]
 }
