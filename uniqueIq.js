@@ -4,27 +4,128 @@ var ref = new Firebase("https://unique-iq.firebaseio.com");
 
 // Change icon on click
 var currentIcon = "icon_off.png";
+var authData;
+
+chrome.browserAction.setIcon({path: currentIcon});
+
+chrome.identity.getProfileUserInfo(function(userInfo) {
+  if(!userInfo.id) {
+    console.log('user logged out!');
+  }
+  console.log('user logged in!');
+  console.log(userInfo);
+  authData = userInfo;
+});
+
+// Fires as soon as all the content has loaded
+// document.addEventListener('DOMContentLoaded', function() {
+  // ref.onAuth(authDataCallback);
+
+  // var users;
+  // var auth = ref.getAuth();
+
+// login();
+
+  // var authData = ref.getAuth();
+
+
+
+  // if (authData) {
+  //   console.log("User " + authData.uid + " is logged in with " + authData.provider);
+  // } else {
+  //   console.log("User is logged out. Logging in now!");
+  //
+  //   ref.authAnonymously(function(error, authData) {
+  //     if (error) {
+  //       console.log("Login Failed!", error);
+  //     } else {
+  //       console.log("Authenticated successfully with payload:", authData);
+  //     }
+  //   });
+  //
+  // }
+
+
+// });
+
+// ref.unauth();
+
+
+// Create a callback which logs the current auth state
+// function authDataCallback(authData) {
+//   if (authData) {
+//     console.log("User " + authData.uid + " is logged in with " + authData.provider);
+//   } else {
+//     console.log("User is logged out");
+//   }
+// }
+
+
+
+// Register the callback to be fired every time auth state changes
+// ref.onAuth(authDataCallback);
+
+
+// ref.unauth();
+// });
+
 
 function updateIcon() {
-
 
   if (currentIcon === "icon_on.png") {
     currentIcon = "icon_off.png";
     // Turn listener off
     chrome.history.onVisited.removeListener(updateLink);
+    // if(ref.getAuth()){
+    //    ref.unauth();
+    //   console.log("Loging out...");
+    // }
   } else {
     currentIcon = "icon_on.png";
     // Turn listener on
     chrome.history.onVisited.addListener(updateLink);
+    // console.log("Loging in...");
+    // login();
   }
 
-  chrome.browserAction.setIcon({path: currentIcon});
+    chrome.browserAction.setIcon({path: currentIcon});
 
 }
 
 chrome.browserAction.onClicked.addListener(updateIcon);
-updateIcon();
+// updateIcon();
 
+
+// Logs users in if not already done so
+function login() {
+  var auth = ref.getAuth();
+
+  console.log("auth: ");
+  console.log(auth);
+  if(!auth) {
+    ref.authWithOAuthPopup("google", function(error, authData) {
+      if (error) {
+        console.log("Login Failed!", error);
+      } else {
+        console.log("Authenticated successfully with payload:", authData);
+        // ref.once("value", function(snapshot) {
+        //   if(!snapshot.child('users').exists()) {
+        //      users = ref.child('users');
+        //      auth = ref.getAuth();
+        //
+        //      getHistory(function(history) {
+        //
+        //      }, function(errorMessage) {
+        //        renderStatus('Huston, we have a problem.');
+        //      });
+        //      //users.push({user: auth.uid});
+        //   }
+        // });
+      }
+    });
+  }
+
+}
 
 // Updates the new page visited to database
 function updateLink(historyItem) {
@@ -66,16 +167,16 @@ function renderStatus(statusText) {
 }
 
 function uploadData(data) {
-  var auth = ref.getAuth();
+  // var auth = ref.getAuth();
 
   // Check if the user already is logged on the server, and if not create it, then enter the data
-  var userRef = ref.child('users/' + auth.uid);
+  var userRef = ref.child('users/' + authData.id);
   userRef.once('value', function(snapshot) {
 
     if(!snapshot.exists()) {
       console.log('New User!');
       for(i in data) {
-        ref.child('users').child(auth.uid + '/URLS').push({URL: data[i], Processed: 'no'});
+        ref.child('users').child(authData.id + '/URLS').push({URL: data[i], Processed: 'no'});
 
 
       }
@@ -97,7 +198,7 @@ function uploadData(data) {
           // If this url hasnt beeen logged already, a=log it to Firebase
           if(!exists) {
             console.log('Adding to existing user: ' + data[i]);
-             ref.child('users').child(auth.uid + '/URLS').push({URL: data[i], Processed: 'no'});
+             ref.child('users').child(authData.id + '/URLS').push({URL: data[i], Processed: 'no'});
           }
         }
       }
@@ -109,42 +210,7 @@ function uploadData(data) {
 }
 
 
-// Fires as soon as all the content has loaded
-document.addEventListener('DOMContentLoaded', function() {
-  var ref = new Firebase("https://unique-iq.firebaseio.com");
-  //ref.onAuth(authDataCallback);
 
-
-  var authData = ref.getAuth();
-  if (authData) {
-    console.log("User " + authData.uid + " is logged in with " + authData.provider);
-  } else {
-    console.log("User is logged out. Logging in now!");
-
-    ref.authAnonymously(function(error, authData) {
-      if (error) {
-        console.log("Login Failed!", error);
-      } else {
-        console.log("Authenticated successfully with payload:", authData);
-      }
-    });
-
-  }
-
-  ref.once("value", function(snapshot) {
-    if(!snapshot.child('users').exists()) {
-       var users = ref.child('users');
-       var auth = ref.getAuth();
-       //users.push({user: auth.uid});
-    }
-  });
-
-  getHistory(function(history) {
-
-  }, function(errorMessage) {
-    renderStatus('Huston, we have a problem.');
-  });
-});
 
 
 
