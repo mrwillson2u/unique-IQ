@@ -45,7 +45,7 @@ chrome.runtime.sendMessage({action: "get", value: "email"}, function(email) {
 
 // Set the first date in the popup
 chrome.runtime.sendMessage({action: "get", value: "first_date"}, function(date) {
-  $('#email_addr').text(date);
+  $('#first_date').text(date);
 });
 
 // Upload all history on click
