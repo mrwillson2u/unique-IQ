@@ -25,8 +25,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   console.log("scanner: " + request.action);
 
   if(request.action === "get") {
-    console.log("getting");
-    sendResponse(scannerOn);
+
+    if(request.value === "scannerOn") {
+      sendResponse(scannerOn);
+    } else if(request.value === "email") {
+        console.log("Email: " + authData.email);
+      if (authData.email) {
+        sendResponse(authData.email);
+      } else {
+        sendResponse("Not logged in");
+      }
+    } else if(request.value === "first_date") {
+
+        sendResponse("Unknown");
+
+    }
+
   } else if (request.action === "set"){
     scannerOn = request.data;
     if(scannerOn === false){
@@ -53,18 +67,13 @@ function updateIcon() {
     currentIcon = "icon_off.png";
     // Turn listener off
     chrome.history.onVisited.removeListener(updateLink);
-    // if(ref.getAuth()){
-    //    ref.unauth();
-    //   console.log("Loging out...");
-    // }
+
   } else {
     currentIcon = "icon_on.png";
     // Turn listener on
     chrome.history.onVisited.addListener(updateLink);
-    // console.log("Loging in...");
-    // login();
-  }
 
+  }
     chrome.browserAction.setIcon({path: currentIcon});
 
 }
@@ -82,7 +91,6 @@ function getAllHistory() {
        }, function(errorMessage) {
          renderStatus('Huston, we have a problem.');
        });
-       //users.push({user: auth.uid});
     }
   });
 }
@@ -91,8 +99,6 @@ function getAllHistory() {
 // Updates the new page visited to database
 function updateLink(historyItem) {
   console.log("Uploading...");
-  // console.log(historyItem);
-
   uploadData([historyItem.url]);
 }
 
@@ -102,13 +108,6 @@ function getHistory(callback) {
   chrome.history.search({text: "", maxResults: 1000}, function(data) {
     var result = [];
     console.log(data.length);
-    // var totalCount = 0;
-    //
-    // for(i in data) {
-    //   totalCount += data[i].visitCount;
-    // }
-    //
-    // console.log("Entries: " + data.length + "   totalCount: " + totalCount);
 
     var urls = [];
 
@@ -128,7 +127,6 @@ function renderStatus(statusText) {
 }
 
 function uploadData(data) {
-  // var auth = ref.getAuth();
 
   // Check if the user already is logged on the server, and if not create it, then enter the data
   var userRef = ref.child('users/' + authData.id);
@@ -147,15 +145,12 @@ function uploadData(data) {
         for(i in data) {
           snapshot.child('URLS').forEach(function(value) {
             // If it is found..
-            // console.log('Checking: ' + value.val().URL);
               if(value.val().URL === data[i]) {
                 exists = true;
                 console.log(data[i] + '  -- already exists!');
                 return true;
               }
           });
-
-
           // If this url hasnt beeen logged already, a=log it to Firebase
           if(!exists) {
             console.log('Adding to existing user: ' + data[i]);
@@ -163,7 +158,6 @@ function uploadData(data) {
           }
         }
       }
-
         // If it doesnt already exist, lets push it to Firebase
         console.log("Data Uploaded!");
 
