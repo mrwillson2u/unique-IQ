@@ -1,5 +1,8 @@
-var red = "#ff0000";
-var green = "#33cc33";
+var red = "#D32E21";
+var green = "#7ED321";
+
+var onText = "Scanner On";
+var offText = "Scanner Off";
 
 // Initialize button to whatever value it was left at last (in background.js)
 chrome.runtime.sendMessage({action: "get"}, function(scannerStat) {
@@ -7,10 +10,10 @@ chrome.runtime.sendMessage({action: "get"}, function(scannerStat) {
   console.log(scanBtn.css("background"));
   if(scannerStat === false){
     scanBtn.css("background", red);
-    scanBtn.text("Off");
+    scanBtn.text(offText);
   } else {
     scanBtn.css("background", green);
-    scanBtn.text("On");
+    scanBtn.text(onText);
   }
 });
 
@@ -21,11 +24,11 @@ var that = this;
     console.log($(that).css("background"));
     if(scannerStat === false){
       $(that).css("background", green);
-      $(that).text("On");
+      $(that).text(onText);
       scannerOn = true;
     } else {
         $(that).css("background", red);
-        $(that).text("Off");
+        $(that).text(offText);
         scannerOn = false;
     }
     chrome.runtime.sendMessage({action: "set", data: scannerOn})
@@ -33,4 +36,8 @@ var that = this;
   });
 
 
+});
+
+$("#log_history_btn").click(function() {
+  chrome.runtime.sendMessage({action: "upload_history"});
 });

@@ -4,26 +4,62 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <style>
       body {
-        font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+        font-family: Tahoma, sans-serif;
+        /*font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;*/
         font-size: 100%;
+        background: #fff;
       }
 
       .button {
-        width: 200px;
-        height: 50px;
+        width: 150px;
+        height: 25px;
         border: 0px;
+        font-size: 20px;
         color: #fff;
-        line-height: 50px;
+        line-height: 25px;
         text-align: center;
+        margin: 100px auto 0px auto;
+        font-weight: 100;
+        cursor:default;
       }
 
 
-      #status {
+      .category {
+        text-align: center;
+      }
+      .sub {
+        color:#6E6E6E;
+        margin-top: 5px;
+      }
+      #title {
+        text-align: center;
+        margin-top: 50px;
+      }
+      #on-off_btn {
+        margin: 70px auto 0px auto;
+      }
+      #log_history_btn {
+        background: #4A90E2;
+        margin: 20px auto;
+      }
+      #logged_as {
+        margin-top: 75px
+      }
+      #email_addr {
+        color:#6E6E6E;
+      }
+      #data_since {
+        margin-top: 30px;
+      }
+
+
+
+      #popup {
          /*avoid an excessively wide status text */
         /*white-space: pre;*/
         /*text-overflow: ellipsis;*/
-        /*overflow: hidden;*/
-        width: 800px;
+        overflow: hidden;
+        width: 400px;
         height: 800px;
       }
 
@@ -37,13 +73,15 @@
      -->
   </head>
     <body>
+    <div id="popup">
+      <h1 id="title">Unique IQ Scanner</h1>
       <div class ="button" id="on-off_btn"></div>
-    <div id="status">
-      <canvas id="canvas" height="600" width="800">
+      <div class ="button" id="log_history_btn">Log All History</div>
+      <div class ="category"id="logged_as">Logged in as:</div>
+      <div class ="category sub"id="email_addr">colinwillson@gmail.com</div>
 
-      </canvas>
-
-
+      <div class ="category"id="data_since">Data collected since:</div>
+      <div class ="category sub"id="date">12/15/2015</div>
 
     </div>
     <img id="image-result" hidden>

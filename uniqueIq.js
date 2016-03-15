@@ -40,6 +40,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
     chrome.browserAction.setIcon({path: currentIcon});
   }
+  else if(request.action === "upload_history") {
+    console.log("Uplading all history.");
+    getAllHistory();
+  }
 });
 
 // Updates the icon when the user turns it on or off
