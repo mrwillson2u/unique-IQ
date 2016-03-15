@@ -7,7 +7,8 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjwVMdYcfUPgLnux03/or2Sn30mg3MoYAYS5DqFwBrBrCqdfDQChrbohPlGBEdQbQ94Ot9/jpP/BPoys2QC9HSF2fD67c1Fn5G64z2rmLA6V9hkDW0bJ8SZn64eeWK7KLcSACRwG/wNYQThuvuJRCP2uGJ4Sotwswe8YCfk6hLy53/4rgQH44EWcTpl5maH+Axg8inJDxSkmh/iRCKjHfkgSzx7xunafjk5pGSVP6KRPqnAIhZ8AeRaxqQXQ1EXWNglsfdn3oJgTIZQ5IrLksy3vnRhNHQdCi2RDuy8UunSero+0tYAiIWMmZDwP1x0sXcHbqPG5kAkYux+BVsy70PQIDAQAB",
   "background": { "scripts": ["bower_components/firebase/firebase.js", "uniqueIq.js"] },
   "browser_action": {
-      "name": "Click to change the icon"
+      "name": "Click to change the icon",
+      "default_popup": "popup.html"
   },
   "content_security_policy": "script-src 'self' https://*.firebaseio.com; object-src 'self'; style-src 'self' 'unsafe-inline'",
   "oauth2": {

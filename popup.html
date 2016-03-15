@@ -10,9 +10,14 @@
 
       .button {
         width: 200px;
-        height: 75px;
-        background: #000;
+        height: 50px;
+        border: 0px;
+        color: #fff;
+        line-height: 50px;
+        text-align: center;
       }
+
+
       #status {
          /*avoid an excessively wide status text */
         /*white-space: pre;*/
@@ -30,14 +35,19 @@
       -
       - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
      -->
-     <!-- <script src="Chart.js"></script> -->
-
   </head>
     <body>
+      <div class ="button" id="on-off_btn"></div>
     <div id="status">
-      <canvas id="canvas" height="600" width="800"></canvas>
+      <canvas id="canvas" height="600" width="800">
+
+      </canvas>
+
+
 
     </div>
     <img id="image-result" hidden>
+    <script src="jquery-1.12.0.min.js"></script>
+    <script src="popup.js"></script>
   </body>
 </html>

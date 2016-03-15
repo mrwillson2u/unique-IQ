@@ -2,11 +2,13 @@
 
 var ref = new Firebase("https://unique-iq.firebaseio.com");
 
-// Change icon on click
-var currentIcon = "icon_on.png";
-chrome.history.onVisited.addListener(updateLink);
 var authData;
+var scannerOn = true;
+var currentIcon = "icon_on.png";
 
+chrome.history.onVisited.addListener(updateLink);
+
+// Set icon to initial state
 chrome.browserAction.setIcon({path: currentIcon});
 
 chrome.identity.getProfileUserInfo(function(userInfo) {
@@ -16,6 +18,28 @@ chrome.identity.getProfileUserInfo(function(userInfo) {
   console.log('user logged in!');
   console.log(userInfo);
   authData = userInfo;
+});
+
+// Listen for messages from popup.js
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  console.log("scanner: " + request.action);
+
+  if(request.action === "get") {
+    console.log("getting");
+    sendResponse(scannerOn);
+  } else if (request.action === "set"){
+    scannerOn = request.data;
+    if(scannerOn === false){
+      currentIcon = "icon_off.png";
+      // Turn listener off
+      chrome.history.onVisited.removeListener(updateLink);
+    } else {
+      currentIcon = "icon_on.png";
+      // Turn listener on
+      chrome.history.onVisited.addListener(updateLink);
+    }
+    chrome.browserAction.setIcon({path: currentIcon});
+  }
 });
 
 // Updates the icon when the user turns it on or off
@@ -40,9 +64,6 @@ function updateIcon() {
     chrome.browserAction.setIcon({path: currentIcon});
 
 }
-
-chrome.browserAction.onClicked.addListener(updateIcon);
-
 
 
 // Collects all URLS in the history and logs them to the database
