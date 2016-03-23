@@ -3,13 +3,11 @@
 var ref = new Firebase("https://unique-iq.firebaseio.com");
 
 var authData;
-var scannerOn = true;
-var currentIcon = "icon_on.png";
-
-chrome.history.onVisited.addListener(updateLink);
-
-// Set icon to initial state
+var scannerOn = false;
+var currentIcon = "icon_off.png";
+// Initialize icon to off state
 chrome.browserAction.setIcon({path: currentIcon});
+
 
 chrome.identity.getProfileUserInfo(function(userInfo) {
   if(!userInfo.id) {
@@ -18,46 +16,54 @@ chrome.identity.getProfileUserInfo(function(userInfo) {
   console.log('user logged in!');
   console.log(userInfo);
   authData = userInfo;
-});
 
-// Listen for messages from popup.js
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log("scanner: " + request.action);
+  // updateIcon();
 
-  if(request.action === "get") {
 
-    if(request.value === "scannerOn") {
-      sendResponse(scannerOn);
-    } else if(request.value === "email") {
-        console.log("Email: " + authData.email);
-      if (authData.email) {
-        sendResponse(authData.email);
-      } else {
-        sendResponse("Not logged in");
+
+  // Listen for messages from popup.js
+  chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+
+    if(request.action === "get") {
+      if(request.value === "scannerOn") {
+        sendResponse(scannerOn);
+      } else if(request.value === "email") {
+          console.log("Email: " + authData.email);
+        if (authData.email) {
+          sendResponse(authData.email);
+        } else {
+          sendResponse("Not logged in");
+        }
+      } else if(request.value === "date_joined") {
+        ref.child('users/' + authData.id + "/date_joined").on("value", function(date) {
+          if (date.val()) {
+              sendResponse(date.val());
+            } else {
+              sendResponse("Unknown");
+          }
+        })
       }
-    } else if(request.value === "first_date") {
 
-        sendResponse("Unknown");
-
+    } else if (request.action === "set"){
+      scannerOn = request.data;
+      if(scannerOn === false){
+        currentIcon = "icon_off.png";
+        // chrome.runtime.sendMessage({action: "set", value: "icon_off"});
+        // Turn listener off
+        chrome.history.onVisited.removeListener(updateLink);
+      } else {
+        currentIcon = "icon_on.png";
+        // chrome.runtime.sendMessage({action: "set", value: "icon_on"});
+        // Turn listener on
+        chrome.history.onVisited.addListener(updateLink);
+      }
+      chrome.browserAction.setIcon({path: currentIcon});
     }
-
-  } else if (request.action === "set"){
-    scannerOn = request.data;
-    if(scannerOn === false){
-      currentIcon = "icon_off.png";
-      // Turn listener off
-      chrome.history.onVisited.removeListener(updateLink);
-    } else {
-      currentIcon = "icon_on.png";
-      // Turn listener on
-      chrome.history.onVisited.addListener(updateLink);
+    else if(request.action === "upload_history") {
+      console.log("Uplading all history.");
+      getAllHistory();
     }
-    chrome.browserAction.setIcon({path: currentIcon});
-  }
-  else if(request.action === "upload_history") {
-    console.log("Uplading all history.");
-    getAllHistory();
-  }
+  });
 });
 
 // Updates the icon when the user turns it on or off
@@ -115,9 +121,9 @@ function getHistory(callback) {
       var page = data[i];
       urls.push(page.url);
 
-      };
-
+    };
     uploadData(urls);
+
   });
 };
 
@@ -135,12 +141,14 @@ function uploadData(data) {
     if(!snapshot.exists()) {
       console.log('New User!');
       for(i in data) {
-        ref.child('users').child(authData.id + '/URLS').push({URL: data[i], Processed: 'no'});
 
+        // Get the date and convert it to a string
+        var theDate = new Date();
+        var dateString = theDate.getUTCDate() + "-" + theDate.getUTCMonth() +  "-" + theDate.getUTCFullYear();
+        ref.child('users').child(authData.id + '/URLS').push({URL: data[i], date_joined: dateString, Processed: 'no'});
 
       }
     } else {
-
         var exists = false;
         for(i in data) {
           snapshot.child('URLS').forEach(function(value) {
@@ -163,9 +171,6 @@ function uploadData(data) {
 
   });
 }
-
-
-
 
 
 
