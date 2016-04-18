@@ -23,6 +23,7 @@
     "tabs",
     "history",
     "identity",
-    "identity.email"
+    "identity.email",
+    "http://unique-server.herokuapp.com/"
   ]
 }
