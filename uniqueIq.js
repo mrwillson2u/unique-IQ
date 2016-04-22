@@ -1,13 +1,9 @@
-
-
 var ref = new Firebase("https://unique-iq.firebaseio.com");
 
 // var userInfo;
 var currentIcon = "icon_off.png";
 // Initialize icon to off state
 chrome.browserAction.setIcon({path: currentIcon});
-
-
 
 chrome.identity.getProfileUserInfo(function(userInfo) {
   if(!userInfo.id) {
@@ -30,7 +26,6 @@ chrome.identity.getProfileUserInfo(function(userInfo) {
   }
 });
 
-
 function loggedIn(userInfo) {
 
 
@@ -38,15 +33,44 @@ function loggedIn(userInfo) {
     console.log(userInfo);
     // userInfo = userInfo;
 
-    // Previously the database didnt have this parameter, so we want to update all the original users who dont have it
+    // Previously the database didnt have the "scanner_status" parameter, so we want to update all the original users who dont have it
     // The next four lines can be removed once all profiles have been updated
-    ref.child('users/' + userInfo.uid + '/scanner_status').once("value", function(statusSnap) {
-      console.log("statusSnap.val(): " + statusSnap.val());
-      if(statusSnap.val() === null) {
-        console.log("updating profile status");
+
+    ref.child('users/' + userInfo.uid).once("value", function(userSnap) {
+      // If user isnt already in the database, add it
+      if(userSnap.val() === null){
+        console.log("Adding new user: " + userInfo.email);
         ref.child('users/' + userInfo.uid).update({scanner_status: true});
-      } else {
-        updateIcon(statusSnap.val());
+        // Get the date and convert it to a string
+        var theDate = new Date();
+        var dateString = theDate.getUTCDate() + "-" + theDate.getUTCMonth() +  "-" + theDate.getUTCFullYear();
+        ref.child('users/' + userInfo.uid).update({date_joined: dateString, scan_status: true});
+        updateIcon(true);
+      }
+      // Previously the database didnt have the "scanner_status"or "date_joined" parameters, so we want to update all the original users who dont have it
+      else {
+        ref.child('users/' + userInfo.uid + '/scanner_status').once("value", function(statusSnap) {
+          console.log("statusSnap.val(): " + statusSnap.val());
+          if(statusSnap.val() === null) {
+            console.log("updating profile status");
+            ref.child('users/' + userInfo.uid).update({scanner_status: true});
+            // updateIcon(true); 
+          }
+          updateIcon(statusSnap.val()); // Initialize scanner status icon to current state
+        });
+
+        ref.child('users/' + userInfo.uid + '/date_joined').once("value", function(dateSnap) {
+          console.log("dateSnap: " + dateSnap.val());
+          if(dateSnap.val() === null) {
+            console.log("updating profile date");
+            var theDate = new Date();
+            var dateString = theDate.getUTCDate() + "-" + theDate.getUTCMonth() +  "-" + theDate.getUTCFullYear();
+            ref.child('users/' + userInfo.uid).update({date_joined: dateString});
+          }
+        });
+
+        // If the user is added and up to date, update the users scanner status icon
+
       }
     });
 
@@ -55,17 +79,14 @@ function loggedIn(userInfo) {
     ref.child('users/' + userInfo.uid).orderByKey().equalTo("scanner_status").on("child_changed", function(statusSnap) {
       updateIcon(statusSnap.val());
     });
+
+
     // Listen for messages from popup.js
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
       if(request.action === "get") {
-        console.log(request);
         if(request.name === "scannner_status") {
-          console.log('getting..');
           ref.child('users/' + userInfo.uid + '/scanner_status').once("value", function(statusSnap) {
-            console.log('userInfo.uid: ');
-            console.log(userInfo.uid);
-            console.log(statusSnap.val());
             sendResponse(statusSnap.val());
           });
         } else if(request.name === "email") {
@@ -100,6 +121,7 @@ function loggedIn(userInfo) {
         switchStatus();
       }
     });
+
 
 
 
@@ -147,10 +169,8 @@ function loggedIn(userInfo) {
 
   // Updates the new page visited to database
   function updateLink(historyItem) {
-    console.log("Uploading...");
     uploadData([historyItem.url]);
   }
-
 
   function getHistory(callback) {
 
@@ -171,10 +191,10 @@ function loggedIn(userInfo) {
   } // END getHistory
 
 
-  function renderStatus(statusText) {
+  // function renderStatus(statusText) {
     //document.getElementById('status').textContent = statusText;
 
-  }
+
 
 
   function uploadData(data) {
@@ -184,17 +204,17 @@ function loggedIn(userInfo) {
 
     userRef.once('value', function(snapshot) {
 
-      if(!snapshot.exists()) {
-        console.log('New User!');
-        for(i in data) {
-
-          // Get the date and convert it to a string
-          var theDate = new Date();
-          var dateString = theDate.getUTCDate() + "-" + theDate.getUTCMonth() +  "-" + theDate.getUTCFullYear();
-          ref.child('users').child(userInfo.uid).push({URL: data[i], date_joined: dateString, Processed: 'no', scan_status: true});
-
-        }
-      } else {
+      // if(!snapshot.exists()) {
+      //   console.log('New User!');
+      //   for(i in data) {
+      //
+      //     // Get the date and convert it to a string
+      //     var theDate = new Date();
+      //     var dateString = theDate.getUTCDate() + "-" + theDate.getUTCMonth() +  "-" + theDate.getUTCFullYear();
+      //     ref.child('users').child(userInfo.uid).push({URL: data[i], date_joined: dateString, Processed: 'no', scan_status: true});
+      //
+      //   }
+      // } else {
           var exists = false;
           for(i in data) {
             snapshot.child('URLS').forEach(function(value) {
@@ -211,7 +231,7 @@ function loggedIn(userInfo) {
                ref.child('users').child(userInfo.uid + '/URLS').push({URL: data[i], Processed: 'no'});
             }
           }
-        }
+        // }
           // If it doesnt already exist, lets push it to Firebase
           console.log("Data Uploaded!");
 
@@ -264,17 +284,11 @@ function loggedIn(userInfo) {
 function httpPOSTAsync(theUrl, uid, callback) {
   var xmlHttp = new XMLHttpRequest();
   xmlHttp.onreadystatechange = function() {
-    console.log("xmlHttp.responseText: " + xmlHttp.responseText);
-    console.log("xmlHttp.readyState");
-    console.log(xmlHttp.readyState);
-    console.log("xmlHttp.status");
-    console.log(xmlHttp.status);
     if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
       callback(xmlHttp.responseText);
     }
   }
   xmlHttp.open("POST", theUrl, true); // true for asynchronous
-  // xmlHttp.setRequestHeader('Access-Control-Allow-Origin', 'chrome-extension://gjjcminmfldeggflleijmobikpakeinh');
   xmlHttp.send(uid);
   console.log("Sending XMLHttpRequest");
 } // END httpGetAsync

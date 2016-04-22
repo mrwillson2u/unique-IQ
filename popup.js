@@ -8,24 +8,16 @@ var offText = "Scanner Off";
 var currentStatus = false;
 
 // Initialize button to whatever value it was left at last (in background.js)
-
-// chrome.runtime.sendMessage({action: "get", data: "userInfo"}, function(userInfo) {
 chrome.runtime.sendMessage({action: "get", name: "scannner_status"}, function(scannerStat) {
-  // console.log(scanBtn.css("background"));
   console.log("scannerStat: " + scannerStat);
   currentStatus = scannerStat;
   setButton(currentStatus);
-
-  // ref.child('users/' + userInfo.id + '/scanner_status').on("child_changed", setButton(statusSnap));
 
   // Change color on click
   $("#on-off_btn").click(function() {
     console.log("Switching status!");
 
-    // ref.child('users/' + userInfo.id + '/scsnner_status').once("value", function(scannerStat) {
-      // chrome.runtime.sendMessage({action: "set", data: !scannerStat})
-      // ref.child('users').child(userInfo.id).update({scanner_status: !scannerStat.val()});
-      chrome.runtime.sendMessage({action: "switch_status"});
+    chrome.runtime.sendMessage({action: "switch_status"});
     // });
   });
 });
@@ -36,14 +28,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if(request.action === "set") {
     if(request.name === "scanner_status") {
       setButton(request.value);
-      //  var buttonRef =$("#on-off_btn");
-      // if(request.value === "true") {
-      //   buttonRef.css("background", green);
-      //   buttonRef.text(onText);
-      // } else if (request.value === "icon_off") {
-      //   buttonRef.css("background", red);
-      //   buttonRef.text(offText);
-      // }
     }
   }
 });
