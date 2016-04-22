@@ -54,9 +54,10 @@ function loggedIn(userInfo) {
           if(statusSnap.val() === null) {
             console.log("updating profile status");
             ref.child('users/' + userInfo.uid).update({scanner_status: true});
-            // updateIcon(true);
+            updateIcon(true);
+          } else {
+            updateIcon(statusSnap.val()); // Initialize scanner status icon to current state
           }
-          updateIcon(statusSnap.val()); // Initialize scanner status icon to current state
         });
 
         ref.child('users/' + userInfo.uid + '/date_joined').once("value", function(dateSnap) {
