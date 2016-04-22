@@ -44,7 +44,7 @@ function loggedIn(userInfo) {
         // Get the date and convert it to a string
         var theDate = new Date();
         var dateString = theDate.getUTCDate() + "-" + theDate.getUTCMonth() +  "-" + theDate.getUTCFullYear();
-        ref.child('users/' + userInfo.uid).update({date_joined: dateString, scan_status: true});
+        ref.child('users/' + userInfo.uid).update({date_joined: dateString, scanner_status: true});
         updateIcon(true);
       }
       // Previously the database didnt have the "scanner_status"or "date_joined" parameters, so we want to update all the original users who dont have it
@@ -54,7 +54,7 @@ function loggedIn(userInfo) {
           if(statusSnap.val() === null) {
             console.log("updating profile status");
             ref.child('users/' + userInfo.uid).update({scanner_status: true});
-            // updateIcon(true); 
+            // updateIcon(true);
           }
           updateIcon(statusSnap.val()); // Initialize scanner status icon to current state
         });
